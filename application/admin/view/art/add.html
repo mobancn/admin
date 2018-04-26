@@ -1,0 +1,178 @@
+{extend name='base'}
+
+{block name='head'}{/block} {//关掉头部}
+{block name='menu'}{/block} {//关掉菜单}
+{block name='seo'}{/block}
+{block name='main'}
+<article class="page-container">
+	<form class="form form-horizontal" id="form-article-add">
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>文章标题：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text" value="" placeholder="" id="name" name="name">
+			</div>
+		</div>
+		
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>分类栏目：</label>
+			<div class="formControls col-xs-8 col-sm-9"> <span class="select-box">
+				<select name="cate_id" id="cate_id" class="select">
+				<option value="0">全部栏目</option>
+				{volist name="cate" id="vo"}
+					<option value="{$vo.id}">{$vo.cate_name}</option>
+				{/volist}
+				</select>
+				</span> </div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">关键字：</label>
+			<div class="formControls col-xs-8 col-sm-9 skin-minimal">
+			{volist name="tag" id="vo"}
+				<div class="check-box">
+					<input type="checkbox" id="tag" name="tag1[]" value="{$vo.id}">
+					<label for="checkbox-pinglun">{$vo.name}</label>
+				</div>
+			{/volist}
+			</div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">排序：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text" value="" placeholder="" id="sort" name="sort">
+			</div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">缩略图：</label>
+			<div class="formControls col-xs-8 col-sm-9 skin-minimal">
+			<input type="text" class="input-text" value="" placeholder="" id="picurl" name="picurl">
+				<div  class="btn btn-default" onClick="upImage()">选择图片</div>
+				<div id="piclist"></div>
+			</div>
+		</div>
+
+		<!-- 隐藏的编辑器 -->
+		<textarea id="uploadEditor" style="display: none;"></textarea>
+		
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">文章内容：</label>
+			<div class="formControls col-xs-8 col-sm-9"> 
+				<script id="container" name="content" type="text/plain" style="width:100%;height:250px;"></script>
+			</div>
+		</div>
+
+
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+				<button onClick="" class="btn btn-secondary radius" type="submit"><i class="Hui-iconfont">&#xe632;</i> 保存</button>
+				<button onClick="removeIframe();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+		</div>
+	</form>
+</article>
+{/block}
+
+{block name='js'}
+<!--请在下方写此页面业务相关的脚本   以下是验证数据的js文件-->
+<script type="text/javascript" src="__STATIC__/lib/My97DatePicker/4.8/WdatePicker.js"></script> 
+<script type="text/javascript" src="__STATIC__/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="__STATIC__/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="__STATIC__/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+
+<!-- 图片路径要在config.js中设置 -->
+<script type="text/javascript" src="__STATIC__/lib/ueditor/1.4.3/ueditor.config.js"></script> 
+<script type="text/javascript" src="__STATIC__/lib/ueditor/1.4.3/ueditor.all.min.js"> </script> 
+<script type="text/javascript" src="__STATIC__/lib/ueditor/1.4.3/lang/zh-cn/zh-cn.js"></script>
+
+<script type="text/javascript">
+
+    // 实例化编辑器
+	var ue = UE.getEditor('container');
+
+    // 对编辑器的操作最好在编辑器ready之后再做
+ 	ue.ready(function () {   
+        //设置编辑器的内容
+    	// ue.setContent('');
+    	//获取html内容，返回: <p>hello</p>
+    	var html = ue.getContent();
+    	//获取纯文本内容，返回: hello
+    	// var txt = ue.getContentTxt(); 
+    });
+
+
+ 	//实例化调用图片浏览的编辑器
+	var pic= UE.getEditor("uploadEditor", {
+        isShow: false,
+        focus: false,
+        enableAutoSave: false,
+        autoSyncData: false,
+        autoFloatEnabled:false,
+        wordCount: false,
+        sourceEditor: null,
+        scaleEnabled:true,
+    });
+ 	// 监听多图上传和上传附件组件的插入动作
+    pic.addListener("beforeInsertImage", _beforeInsertImage); 
+ 
+    // 自定义按钮绑定触发多图上传和上传附件对话框事件
+ 	function upImage()  
+      {  
+        var myImage = pic.getDialog("insertimage");  
+        myImage.open();  
+      }  
+    
+    // 多图上传动作
+ 	function _beforeInsertImage(t, result) {
+        var imageHtml = '';
+        for(var i in result){
+            imageHtml += '<img src="'+result[i].src+'" alt="'+result[i].alt+'" height="100" width="100">';
+             $("#picurl").val(result[i].src);
+        }
+        document.getElementById('piclist').innerHTML = imageHtml;     
+    }
+
+	
+
+
+	// 提交数据验证
+    $("#form-article-add").validate({
+		rules:{
+			name:{
+				required:true,
+			},
+			cate_id:{
+				required:true,
+				min:1,
+			},
+
+		},
+		messages:{  
+            name:{  
+                required:"必填",  
+            },  
+        },  
+		onkeyup:false,
+		success:"valid",
+		submitHandler:function(form){
+			 $.ajax({
+				type: "POST",
+				url: "{:url('doAdd')}",
+				data: $("#form-article-add").serialize(),
+				success: function(data){
+				layer.msg('已添加!', {icon: 1, time: 1000}); //消息弹层1秒后消失
+					window.parent.location.reload();
+        			window.location.reload(); //重新加载页面,显示所有数据
+
+				},
+				error:function(data) {
+					console.log(data.msg);
+				},		
+			});
+		},
+		invalidHandler: function(form, validator) {return false;}
+	});
+</script>
+
+{/block}

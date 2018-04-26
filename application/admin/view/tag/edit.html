@@ -1,0 +1,117 @@
+{extend name='base'/}
+{block name='head'}{/block} {//关掉头部}
+{block name='menu'}{/block} {//关掉菜单}
+{block name='seo'}{/block}
+
+{block name='main'}
+<article class="cl pd-20">
+
+
+	<form  class="form form-horizontal" id="form-student-edit">
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>姓名：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+
+				<input  type="text" class="input-text" value="{$info.name}" placeholder="" id="name" name="name">
+			</div>
+		</div>
+
+
+		
+
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3">启用状态：</label>
+			<div class="formControls col-xs-8 col-sm-9"> <span class="select-box" style="width:150px;">
+				<select class="select" name="status" id="status" size="1">
+					<!--根据当前用户实际状态,动态显示默认值-->
+					{eq name='$info.status' value="1"}
+					<option value="1" selected>启用</option>
+					<option value="0" >不启用</option>
+					{else /}
+					<option value="1" >启用</option>
+					<option value="0" selected>不启用</option>
+					{/eq}
+
+				</select>
+				</span>
+			</div>
+		</div>
+
+
+		<!--将当前记录的id做为隐藏域发送到服务器-->
+		<input type="hidden" value="{$info.id}" name="id">
+
+
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+			     <!-- 这里的提交按钮必须是type submit -->
+				<input class="btn btn-primary radius disabled" type="submit" value="&nbsp;&nbsp;提交&nbsp;&nbsp;" id="submit" >
+			</div>
+		</div>
+	</form>
+
+
+</article>
+{/block}
+
+{block name='js'}
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__STATIC__/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="__STATIC__/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="__STATIC__/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+
+
+
+
+<script>
+
+
+
+		//当用户修改了输入框内容时才触发
+	    $("form").children().change(function(){
+	        $("#submit").removeClass('disabled');
+		});
+
+
+		
+
+		$("#form-student-edit").validate({
+		rules:{
+			name:{
+				required:true,
+			},
+		},
+
+		messages:{  
+            name:{  
+                required:"必填",  
+            }  
+        },  
+		onkeyup:false,
+		focusCleanup:true,
+		success:"valid",
+		submitHandler:function(form){
+			 $.ajax({
+				type: "POST",
+				url: "{:url('doEdit')}",
+				data: $("#form-student-edit").serialize(),
+				// dataType: "json",
+				success: function(data){
+				layer.msg('已修改!', {icon: 1, time: 1000}); //消息弹层1秒后消失
+					window.parent.location.reload();
+        			window.location.reload(); //重新加载页面,显示所有数据
+				},
+				error:function(data) {
+					console.log(data.msg);
+				},		
+			});
+		},
+		invalidHandler: function(form, validator) {return false;}
+	});
+
+
+
+
+</script>
+{/block}

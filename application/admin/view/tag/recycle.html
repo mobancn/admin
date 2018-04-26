@@ -1,0 +1,240 @@
+﻿{extend name='base'}
+{block name='head'}{/block}
+{block name='menu'}{/block} 
+{block name='seo'}{/block}
+{block name='main'}
+
+
+
+			
+			<div class="cl pd-5 bg-1 bk-gray mt-20">
+				<span class="l">
+
+				<a href="javascript:;" onclick="delso()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 清空回收站</a>
+
+				<a href="javascript:;" onclick="delall()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a>
+
+				<a href="javascript:;" onclick="undelall()" class="btn btn-primary radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量还原</a>
+
+				<a href="javascript:;" onclick="unDelete()" class="btn btn-primary radius"><i class="Hui-iconfont">&#xe6e2;</i> 还原所有</a>
+
+				</span>
+				
+			</div>
+			<div class="mt-20">
+				<table class="table table-border table-bordered table-bg table-hover table-sort">
+					<thead>
+						<tr class="text-c">
+							<th width="25"><input type="checkbox" name="" value=""></th>
+							<th width="50">ID</th>
+							<th width="50">名称</th>
+							<th width="100">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+					{volist name="list" id="vo"}
+						<tr class="text-c">
+							<td><input type="checkbox" value="{$vo.id}" name="del"></td>
+							<td>{$vo.id}</td>
+							<td>{$vo.name}</td>
+							<td class="f-14 td-manage">
+							<a style="text-decoration:none" onClick="undel(this,{$vo.id})" href="javascript:;" title="还原"><i class="Hui-iconfont">&#xe6de;</i></a>
+
+							<a style="text-decoration:none" class="ml-5" onClick="article_del(this,{$vo.id})" href="javascript:;" title="彻底删除"><i class="Hui-iconfont">&#xe6e2;</i></a>
+
+							</td>
+						</tr>
+					{/volist}	
+						
+					</tbody>
+				</table>
+			</div>
+
+
+{/block}
+
+
+
+
+
+{block name='js'}
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__STATIC__/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="__STATIC__/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="__STATIC__/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+$('.table-sort').dataTable({
+	"aaSorting": [[ 1, "desc" ]],//默认第几个排序
+	"bStateSave": true,//状态保存
+	"aoColumnDefs": [
+		//{"bVisible": false, "aTargets": [ 3 ]} //控制列的隐藏显示
+		{"orderable":false,"aTargets":[0,3]}// 不参与排序的列
+	],
+	"lengthMenu": [ 10, 25, 50, 75, 100 ] //设置每页显示数量
+});
+
+/*资讯-添加*/
+function article_add(title,url,w,h){
+	var index = layer.open({
+		type: 2,
+		title: title,
+		content: url
+	});
+	layer.full(index);
+}
+/*资讯-编辑*/
+function article_edit(title,url,id,w,h){
+	var index = layer.open({
+		type: 2,
+		title: title,
+		content: url
+	});
+	layer.full(index);
+}
+/*资讯-回收站*/
+function article_recycle(title,url,id,w,h){
+	var index = layer.open({
+		type: 2,
+		title: title,
+		content: url
+	});
+	layer.full(index);
+}
+
+//批量删除(原模板中没有,自己动手,丰衣足食)
+function delall() {
+	// 判断是否至少选择一项 
+	var checkedNum = $("input[name='del']:checked").length; 
+	if(checkedNum == 0) { 
+	alert("请选择至少一项！"); 
+	return; 
+	} 
+	//将多选框的值追加到字符串的后面
+	var checkList= new Array();  
+    $("input[name='del']:checked").each(function(){  
+                    checkList.push($(this).val());  // 在数组中追加元素
+    });
+
+
+	layer.confirm('确认要批量删除吗？', function () {
+        $.ajax({
+			type: 'POST',
+			url: "{:url('delall')}",
+			data:{id:checkList.toString()},
+			success: function(data){
+				layer.msg('已删除!', {icon: 1, time: 1000}); //消息弹层1秒后消失
+        		window.location.reload(); //重新加载页面,显示所有数据
+			},
+			error:function(data) {
+				console.log(data.msg);
+			},		
+		});	     
+    });
+}
+
+
+//批量还原
+function undelall() {
+	// 判断是否至少选择一项 
+	var checkedNum = $("input[name='del']:checked").length; 
+	if(checkedNum == 0) { 
+	alert("请选择至少一项！"); 
+	return; 
+	} 
+	//将多选框的值追加到字符串的后面
+	var checkList= new Array();  
+    $("input[name='del']:checked").each(function(){  
+                    checkList.push($(this).val());  // 在数组中追加元素
+    });
+
+
+	layer.confirm('确认要批量还原吗？', function () {
+        $.ajax({
+			type: 'POST',
+			url: "{:url('undelall')}",
+			data:{id:checkList.toString()},
+			success: function(data){
+				layer.msg('已还原!', {icon: 1, time: 1000}); //消息弹层1秒后消失
+        		window.location.reload(); //重新加载页面,显示所有数据
+			},
+			error:function(data) {
+				console.log(data.msg);
+			},		
+		});	     
+    });
+}
+
+
+
+/*资讯-删除*/
+function article_del(obj,id){
+	layer.confirm('确认要彻底删除吗？',function(index){
+		$.ajax({
+			type: 'POST',
+			url: "{:url('ydelete')}",
+			data:{"id":id},
+			success: function(data){
+				$(obj).parents("tr").remove();
+				layer.msg('已删除!',{icon:1,time:1000});
+			},
+			error:function(data) {
+				console.log(data.msg);
+			},
+			
+		});		
+	});
+}
+
+
+/*资讯-清空*/
+function delso(){
+	layer.confirm('确认清空回收吗？',function(index){
+		//停用操作
+		$.get("{:url('delso')}");
+		layer.msg('已清空!',{icon: 5,time:1000});
+		window.location.reload(); 
+	});
+}
+
+/*资讯-还原*/
+function undel(obj,id){
+	layer.confirm('确认要还原吗？',function(index){
+		$.ajax({
+			type: 'POST',
+			url: "{:url('undel')}",
+			data:{"id":id},
+			success: function(data){
+				$(obj).parents("tr").remove();
+				layer.msg('已还原!',{icon:1,time:1000});
+			},
+			error:function(data) {
+				console.log(data.msg);
+			},
+			
+		});		
+	});
+}
+
+
+//批量恢复(原模板中没有,自己动手,丰衣足食)
+function unDelete() {
+    layer.confirm('确认要恢复吗？', function () {
+        $.ajax({
+			type: 'POST',
+			url: "{:url('unDelete')}",
+			success: function(data){
+				layer.msg('已恢复!', {icon: 1, time: 1000}); //消息弹层1秒后消失
+        		window.parent.location.reload();
+        		window.location.reload(); //重新加载页面,显示所有数据
+			},
+			error:function(data) {
+				console.log(data.msg);
+			},		
+		});	   
+    });
+}
+
+
+
+</script>
+{/block}
